@@ -1,0 +1,48 @@
+<div class="chat-page">
+    <div class="chat-page__sidebar">
+        <div class="chat-page__sidebar-header">
+            {{> Button
+                text="Профиль"
+                type="button"
+                view="default"
+                clear=true
+                iconRight=profileIcon
+            }}
+            <input class="chat-page__sidebar-search" placeholder="Поиск" aria-label="Поиск чатов">
+        </div>
+        {{> ChatList chats=chats }}
+    </div>
+    {{#if activeChat}}
+        <div class="chat-page__chat">
+            <div class="chat-page__chat-header">
+                {{> Avatar avatar=activeChat.avatar name=activeChat.name size="s" }}
+                <p class="chat-page__name">{{activeChat.name}}</p>
+                <div class="chat-page__setting">
+                    {{> Button
+                        type="button"
+                        view="default"
+                        clear=true
+                        iconRight=settingsIcon
+                    }}
+                </div>
+            </div>
+            <div class="chat-page__body">
+                {{> MessagesList messages=activeChat.messages }}
+            </div>
+            <div class="chat-page__chat-footer">
+                {{> Button
+                    type="button"
+                    view="default"
+                    clear=true
+                    iconRight=attachmentsIcon
+                }}
+                <textarea class="chat-page__chat-textarea" name="message" placeholder="Сообщение" rows="1" ></textarea>
+                <button class="chat-page__chat-send-button" type="button"></button>
+            </div>
+        </div>
+    {{else}}
+        <div class="chat-page__chat">
+            <p class="chat-page__welcome-message">Выберите чат, чтобы отправить сообщение</p>
+        </div>
+    {{/if}}
+</div>

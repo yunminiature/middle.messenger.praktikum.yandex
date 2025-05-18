@@ -1,0 +1,17 @@
+<div class="input-wrapper input-wrapper--{{labelPlacement}}">
+    {{#if label}}
+        <label class="input-label" for="{{name}}">{{label}}</label>
+    {{/if}}
+    <input
+        class="input{{#if error}} input--error{{/if}}"
+        id="{{name}}"
+        type="{{type}}"
+        name="{{name}}"
+        placeholder="{{placeholder}}"
+        {{#if required}} required {{/if}}
+        value="{{value}}"
+    />
+    {{#if errorText}}
+        <p class="input-error">{{errorText}}</p>
+    {{/if}}
+</div>

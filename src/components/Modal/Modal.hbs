@@ -1,0 +1,20 @@
+<div class="modal-wrapper">
+    <div class="modal-container">
+        <h3 class="modal-title">{{title}}</h3>
+        <div class="modal-content">
+            {{content}}
+        </div>
+        {{#if mainButton}}
+            <div class="modal-buttons">
+                {{> Button mainButton }}
+                {{#if secondaryButton}}
+                    {{> Button secondaryButton }}
+                {{/if}}
+            </div>
+        {{else if secondaryButton}}
+            <div class="modal-buttons">
+                {{> Button secondaryButton }}
+            </div>
+        {{/if}}
+    </div>
+</div>

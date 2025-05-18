@@ -1,0 +1,24 @@
+<li class="chat-item {{#if isActive}}chat-item--active{{/if}}">
+    {{> Avatar avatar=avatar name=name size="m" }}
+    <div class="chat-item__content">
+        <p class="chat-item__name">{{name}}</p>
+        {{#if lastMessage}}
+            <p class="chat-item__message">
+                {{#unless lastMessage.user}}
+                    <span class="chat-item__user">Вы:&nbsp;</span>
+                {{/unless}}
+                {{#if lastMessage.text}}
+                    {{lastMessage.text}}
+                {{else if lastMessage.content.type}}
+                    {{lastMessage.content.type}}
+                {{/if}}
+            </p>
+        {{/if}}
+    </div>
+    <div class="chat-item__badges">
+        <p class="chat-item__date">{{updatedAt}}</p>
+        {{#if unreadCount}}
+            <div class="chat-item__unread">{{unreadCount}}</div>
+        {{/if}}
+    </div>
+</li>
