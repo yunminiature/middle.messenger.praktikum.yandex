@@ -1,0 +1,21 @@
+<button
+    type="{{type}}"
+    class="button
+        {{#if view}}{{view}}{{/if}}
+        {{#if warning}} warning{{/if}}
+        {{#if clear}} clear{{/if}}
+        {{#if fullWidth}} fullWidth{{/if}}"
+    {{#if disabled}}disabled{{/if}}
+>
+    {{#if iconLeft}}
+        <span class="button__icon">
+            <img src="{{iconLeft}}" alt="icon" />
+        </span>
+    {{/if}}
+    <span class="text">{{text}}</span>
+    {{#if iconRight}}
+        <span class="button__icon">
+            <img src="{{iconRight}}" alt="icon" />
+        </span>
+    {{/if}}
+</button>

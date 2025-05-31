@@ -1,0 +1,22 @@
+<form class="form {{#if gap}}{{gap}}{{/if}}" method="post">
+    {{#if title}}
+        <h2 class="form-title">{{title}}</h2>
+    {{/if}}
+    <div class="form-content">
+        {{#each inputs}}
+            {{> Input this }}
+        {{/each}}
+    </div>
+    {{#if mainButton}}
+        <div class="form-buttons">
+            {{> Button mainButton }}
+            {{#if secondaryButton}}
+                {{> Button secondaryButton }}
+            {{/if}}
+        </div>
+    {{else if secondaryButton}}
+        <div class="form-buttons">
+            {{> Button secondaryButton }}
+        </div>
+    {{/if}}
+</form>

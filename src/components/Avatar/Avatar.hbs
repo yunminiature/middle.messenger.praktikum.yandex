@@ -1,0 +1,7 @@
+<div class="avatar avatar--{{size}}">
+    {{#if avatar}}
+        <img class="avatar__image" src="{{avatar}}" alt="{{name}}" />
+    {{else if name}}
+        <div class="avatar__placeholder">{{name.[0]}}</div>
+    {{/if}}
+</div>
