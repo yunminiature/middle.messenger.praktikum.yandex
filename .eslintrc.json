@@ -26,7 +26,12 @@
     "import/no-extraneous-dependencies": [
       "error",
       {
-        "devDependencies": false,
+        "devDependencies": [
+          "**/vite.config.ts",
+          "**/vite.config.*.ts",
+          "**/*.config.ts",
+          "**/*.config.js"
+        ],
         "optionalDependencies": false,
         "peerDependencies": false,
         "packageDir": "./"
