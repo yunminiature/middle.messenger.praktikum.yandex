@@ -1,12 +1,12 @@
 @use '../../styles/colors' as *;
 
 .chat-item {
-    position: relative;
+    box-sizing: border-box;
+    cursor: pointer;
     display: flex;
     flex-direction: row;
-    margin: 3px 0 0;
+    height: 67px;
     padding: 10px;
-    cursor: pointer;
 
     &--active {
         background-color: #E4EDFD;
@@ -22,24 +22,28 @@
         row-gap: 4px;
     }
 
+    &__avatar {
+        margin-right: 10px;
+    }
+
     &__name {
-        margin: 0;
         display: flex;
-        justify-content: space-between;
-        font-weight: 600;
-        line-height: 13px;
         font-size: 13px;
+        font-weight: 600;
+        justify-content: space-between;
+        line-height: 13px;
+        margin: 0;
     }
 
     &__message {
-        margin: 0;
-        max-width: 193px;
-        line-height: 15px;
-        font-size: 12px;
+        -webkit-box-orient: vertical;
         color: $secondary-color;
         display: -webkit-box;
+        font-size: 12px;
         -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
+        line-height: 15px;
+        margin: 0;
+        max-width: 193px;
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -49,33 +53,33 @@
     }
 
     &__badges {
-        position: absolute;
-        right: 10px;
-        height: 47px;
-        margin-left: auto;
+        align-items: flex-end;
         display: flex;
         flex-direction: column;
+        height: 47px;
         justify-content: space-between;
-        align-items: flex-end;
+        margin-left: auto;
+        position: absolute;
+        right: 10px;
     }
 
     &__date {
-        margin: 0;
-        line-height: 13px;
-        font-size: 9px;
         color: $secondary-color;
+        font-size: 9px;
+        line-height: 13px;
+        margin: 0;
     }
 
     &__unread {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        display: flex;
         align-items: center;
+        background-color: $accent-color;
+        border-radius: 50%;
+        color: white;
+        display: flex;
+        font-size: 11px;
+        height: 20px;
         justify-content: center;
         line-height: 12px;
-        font-size: 11px;
-        color: white;
-        background-color: $accent-color;
+        width: 20px;
     }
 }

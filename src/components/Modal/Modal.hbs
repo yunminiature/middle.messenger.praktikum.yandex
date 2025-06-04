@@ -1,20 +1,12 @@
-<div class="modal-wrapper">
+<div class="modal-overlay" data-id="modal-overlay">
     <div class="modal-container">
-        <h3 class="modal-title">{{title}}</h3>
-        <div class="modal-content">
-            {{content}}
-        </div>
-        {{#if mainButton}}
-            <div class="modal-buttons">
-                {{> Button mainButton }}
-                {{#if secondaryButton}}
-                    {{> Button secondaryButton }}
-                {{/if}}
-            </div>
-        {{else if secondaryButton}}
-            <div class="modal-buttons">
-                {{> Button secondaryButton }}
-            </div>
+        {{#if title}}
+            <h2 class="modal-title">{{title}}</h2>
+        {{/if}}
+        <div class="modal-content">{{{content}}}</div>
+        <div class="modal-button" data-id="modal-button">{{{buttonHtml}}}</div>
+        {{#if errorText}}
+            <div class="modal-error">{{errorText}}</div>
         {{/if}}
     </div>
 </div>

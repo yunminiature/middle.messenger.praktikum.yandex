@@ -1,2 +1,2 @@
-import './Error.scss'
-export { default as Error } from './Error.hbs?raw';
+export { default as Error } from './Error';
+export type { ErrorProps } from './Error';

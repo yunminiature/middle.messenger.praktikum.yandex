@@ -3,6 +3,7 @@ export { Button } from './Button';
 export { ChatItem } from './ChatItem';
 export { ChatList } from './ChatList';
 export { Error } from './Error';
+export { FileUploadModal } from './FileUploadModal';
 export { Form } from './Form';
 export { Input } from './Input';
 export { MessageItem } from './MessageItem';

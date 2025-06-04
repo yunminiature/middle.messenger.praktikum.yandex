@@ -1,2 +1,2 @@
-import './MessagesList.scss'
-export { default as MessagesList } from './MessagesList.hbs?raw';
+export { default as MessagesList } from './MessagesList';
+export type { MessagesListProps } from './MessagesList';

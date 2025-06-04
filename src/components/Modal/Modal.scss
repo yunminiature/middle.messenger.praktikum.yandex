@@ -1,36 +1,45 @@
-.modal-wrapper {
+@use '../../styles/colors' as *;
+
+.modal-overlay {
+    align-items: center;
+    background-color: rgb(0 0 0 / 40%);
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    left: 0;
     position: fixed;
     top: 0;
-    left: 0;
     width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.4);
     z-index: 1000;
 }
 
 .modal-container {
-    min-width: 340px;
-    max-width: calc(100vw - 300px);
-    padding: 40px 30px;
+    align-items: center;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 0 6px 0 rgb(0 0 0 / 14%);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    border-radius: 12px;
-    box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.14);
-    background-color: white;
+    max-width: calc(100vw - 300px);
+    min-width: 340px;
+    padding: 40px 30px;
 }
 
 .modal-title {
-    margin: 0 0 43px;
-    line-height: 20px;
     font-size: 15px;
+    line-height: 20px;
+    margin: 0 0 43px;
     text-align: center;
 }
 
-.modal-buttons {
+.modal-button {
     margin-top: 45px;
+}
+
+.modal-error {
+    color: $warning-color;
+    font-size: 11px;
+    line-height: 11px;
+    margin: 14px 0 0;
 }
