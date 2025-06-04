@@ -3,7 +3,7 @@ import Block from '../../core/Block';
 import type { Props } from '../../core/Block';
 import { Error } from '../../components/Error';
 import type { ErrorProps } from '../../components/Error';
-import rawTemplate from './404.hbs/?raw';
+import rawTemplate from './404.hbs?raw';
 import './404.scss';
 
 const compiledTemplate = Handlebars.compile(rawTemplate);
