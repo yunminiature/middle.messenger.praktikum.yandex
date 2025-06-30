@@ -1,10 +1,5 @@
 <div class="error__container">
     <h1 class="error__title">{{title}}</h1>
     <p class="error__description">{{description}}</p>
-    {{> Button
-        type="button"
-        view="accent"
-        clear=true
-        text="Назад к чатам"
-    }}
+    <div class="error__button" data-id="{{buttonStubId}}"></div>
 </div>

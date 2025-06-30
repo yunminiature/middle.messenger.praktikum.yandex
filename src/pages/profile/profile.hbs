@@ -1,37 +1,24 @@
 <div class="profile-page">
-    <button class="profile-page__side-button" aria-label="Назад">
+    <button class="profile-page__side-button" aria-label="Назад" data-id="back-button">
         <img src="/public/icons/leftArrowCircle.svg" alt="" class="custom-button__icon" />
     </button>
     <div class="profile-page__content">
         <div class="profile-page__avatar-wrapper">
-            <button class="profile-page__avatar-button" hidden="hidden"></button>
             {{#if avatar}}
                 <img class="profile-page__avatar-image" src="{{avatar}}" alt="Аватар" />
             {{/if}}
-            <p class="profile-page__avatar-overlay">Поменять аватар</p>
+            <button class="profile-page__avatar-overlay" data-id="avatar-btn">Поменять аватар</button>
         </div>
         <p class="profile-page__name">{{first_name}}</p>
-        <div class="profile-page__info">
-            {{> Form
-                inputs=inputs
-            }}
-        </div>
-        <ul class="profile-page__actions">
-            <li>
-                {{> Button type="button" view="accent" clear=true text="Изменить данные" }}
-            </li>
-            <li>
-                <hr class="profile-page__actions-divider" />
-            </li>
-            <li>
-                {{> Button type="button" view="accent" clear=true text="Изменить пароль" }}
-            </li>
-            <li>
-                <hr class="profile-page__actions-divider" />
-            </li>
-            <li>
-                {{> Button type="button" warning=true clear=true text="Выйти" }}
-            </li>
-        </ul>
+        <div class="profile-page__info" data-id="form-stub"></div>
+        {{#if isView}}
+            <ul class="profile-page__actions" data-id="actions-list">
+                <li data-id="edit-data-stub"></li>
+                <li><hr class="profile-page__actions-divider" /></li>
+                <li data-id="edit-password-stub"></li>
+                <li><hr class="profile-page__actions-divider" /></li>
+                <li data-id="logout-stub"></li>
+            </ul>
+        {{/if}}
     </div>
 </div>

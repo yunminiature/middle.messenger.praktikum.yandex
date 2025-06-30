@@ -1,48 +1,50 @@
 <div class="chat-page">
     <div class="chat-page__sidebar">
         <div class="chat-page__sidebar-header">
-            {{> Button
-                text="Профиль"
-                type="button"
-                view="default"
-                clear=true
-                iconRight=profileIcon
-            }}
-            <input class="chat-page__sidebar-search" placeholder="Поиск" aria-label="Поиск чатов">
+            <div data-id="profile-button"></div>
+            <input
+                class="chat-page__sidebar-search"
+                placeholder="Поиск"
+                aria-label="Поиск чатов"
+                data-id="search-input"
+            />
         </div>
-        {{> ChatList chats=chats }}
+        <div data-id="chatlist"></div>
     </div>
     {{#if activeChat}}
         <div class="chat-page__chat">
             <div class="chat-page__chat-header">
-                {{> Avatar avatar=activeChat.avatar name=activeChat.name size="s" }}
+                <div data-id="avatar"></div>
                 <p class="chat-page__name">{{activeChat.name}}</p>
+
                 <div class="chat-page__setting">
-                    {{> Button
-                        type="button"
-                        view="default"
-                        clear=true
-                        iconRight=settingsIcon
-                    }}
+                    <div data-id="settings-button"></div>
                 </div>
             </div>
             <div class="chat-page__body">
-                {{> MessagesList messages=activeChat.messages }}
+                <div data-id="messageslist"></div>
             </div>
             <div class="chat-page__chat-footer">
-                {{> Button
+                <div data-id="attachments-button"></div>
+                <textarea
+                    class="chat-page__chat-textarea"
+                    name="message"
+                    placeholder="Сообщение"
+                    rows="1"
+                    data-id="message-textarea"
+                ></textarea>
+                <button
+                    class="chat-page__chat-send-button"
                     type="button"
-                    view="default"
-                    clear=true
-                    iconRight=attachmentsIcon
-                }}
-                <textarea class="chat-page__chat-textarea" name="message" placeholder="Сообщение" rows="1" ></textarea>
-                <button class="chat-page__chat-send-button" type="button"></button>
+                    data-id="send-button"
+                ></button>
             </div>
         </div>
     {{else}}
         <div class="chat-page__chat">
-            <p class="chat-page__welcome-message">Выберите чат, чтобы отправить сообщение</p>
+            <p class="chat-page__welcome-message">
+                Выберите чат, чтобы отправить сообщение
+            </p>
         </div>
     {{/if}}
 </div>

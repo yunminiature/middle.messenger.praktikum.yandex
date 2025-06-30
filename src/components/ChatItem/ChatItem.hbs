@@ -1,5 +1,5 @@
-<li class="chat-item {{#if isActive}}chat-item--active{{/if}}">
-    {{> Avatar avatar=avatar name=name size="m" }}
+<div class="chat-item {{#if isActive}} chat-item--active{{/if}}">
+    <div class="chat-item__avatar" data-id="{{avatarStubId}}"></div>
     <div class="chat-item__content">
         <p class="chat-item__name">{{name}}</p>
         {{#if lastMessage}}
@@ -21,4 +21,4 @@
             <div class="chat-item__unread">{{unreadCount}}</div>
         {{/if}}
     </div>
-</li>
+</div>

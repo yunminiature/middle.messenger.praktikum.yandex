@@ -3,15 +3,16 @@
         <label class="input-label" for="{{name}}">{{label}}</label>
     {{/if}}
     <input
-        class="input{{#if error}} input--error{{/if}}"
+        class="input"
         id="{{name}}"
         type="{{type}}"
         name="{{name}}"
         placeholder="{{placeholder}}"
-        {{#if required}} required {{/if}}
+        {{#if required}} required{{/if}}
         value="{{value}}"
+        {{#if disabled}} disabled{{/if}}
     />
-    {{#if errorText}}
-        <p class="input-error">{{errorText}}</p>
-    {{/if}}
 </div>
+{{#if errorText}}
+    <p class="input-error input-error--{{labelPlacement}}">{{errorText}}</p>
+{{/if}}

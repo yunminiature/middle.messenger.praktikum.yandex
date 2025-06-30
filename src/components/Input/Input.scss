@@ -1,69 +1,77 @@
 @use '../../styles/colors' as *;
 
 .input-wrapper {
+    .input {
+        border: none;
+        font-size: 13px;
+        line-height: 13px;
+        outline: none;
+
+        &:disabled {
+            background-color: transparent;
+        }
+    }
+
     &--top {
         display: flex;
         flex-direction: column;
         row-gap: 7px;
 
         .input-label {
-            line-height: 9px;
-            font-size: 9px;
             color: #999;
+            font-size: 9px;
+            line-height: 9px;
         }
 
         .input {
-            padding: 0 0 7px;
             border: none;
-            border-radius: 0;
-            outline: none;
             border-bottom: 1px solid $accent-color;
-            line-height: 13px;
-            font-size: 13px;
+            border-radius: 0;
             color: $primary-color;
-
-            &--error {
-                border-color: $warning-color;
-            }
-        }
-
-        .input-error {
-            margin: 0;
-            font-weight: 400;
-            line-height: 8px;
-            font-size: 8px;
-            color: $warning-color;
+            outline: none;
+            padding: 0 0 7px;
         }
     }
 
     &--left {
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        column-gap: 16px;
         display: flex;
         flex-direction: row;
-        align-items: center;
-        column-gap: 16px;
-        border-bottom: 1px solid #eee;
-
-        &.input-wrapper--error {
-            border-color: $warning-color;
-        }
 
         .input-label {
-            flex-shrink: 0;
-            min-width: 120px;
-            line-height: 13px;
-            font-size: 13px;
             color: $primary-color;
+            flex-shrink: 0;
+            font-size: 13px;
+            line-height: 13px;
+            min-width: 120px;
         }
 
         .input {
+            color: $secondary-color;
             flex-grow: 1;
             padding: 6px 0;
-            border: none;
-            outline: none;
-            line-height: 13px;
-            font-size: 13px;
-            color: $secondary-color;
             text-align: right;
         }
+    }
+}
+
+
+.input-error {
+    color: $warning-color;
+    font-size: 8px;
+    font-weight: 400;
+    line-height: 8px;
+    margin: 4px 0 0;
+
+
+    &--top {
+        padding-left: 0;
+        text-align: left;
+    }
+
+    &--left {
+        text-align: right;
     }
 }

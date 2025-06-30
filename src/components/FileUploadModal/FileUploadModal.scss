@@ -1,0 +1,26 @@
+@use '../../styles/colors' as *;
+
+.file-upload-container {
+    align-items: center;
+    display: flex;
+    width: 100%;
+}
+
+.file-upload__choose {
+    background-color: transparent;
+    border: none;
+    color: $accent-color;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 16px;
+    outline: none;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.file-upload__filename {
+    color: #8D8D8D;
+    font-size: 14px;
+    line-height: 16px;
+    margin: 0;
+}
