@@ -1,9 +1,11 @@
 import Handlebars from 'handlebars';
 import Block from '../../core/Block';
+import { router } from '../../main';
 import { Form } from '../../components/Form';
 import type { FormProps } from '../../components/Form';
 import rawTemplate from './login.hbs?raw';
 import './login.scss';
+import { AuthController } from '../../controllers/login';
 
 const compiledTemplate = Handlebars.compile(rawTemplate);
 
@@ -46,21 +48,20 @@ export default class PageLogin extends Block {
         fullWidth: true,
         events: {
           click: () => {
-            history.pushState({}, '', '/signup');
-            window.dispatchEvent(new PopStateEvent('popstate'));
+            router.go('/signup');
           },
         },
       },
       onSubmit: (values) => {
-        console.log('[PageLogin] onSubmit, получены значения:', values);
+        AuthController.login(values);
       },
     };
 
     super('div', { formProps });
   }
 
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   public render(): DocumentFragment {
-    void this;
     const htmlString = compiledTemplate({});
     const temp = document.createElement('template');
     temp.innerHTML = htmlString.trim();

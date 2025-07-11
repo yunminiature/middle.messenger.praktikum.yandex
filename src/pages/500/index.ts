@@ -5,6 +5,7 @@ import { Error } from '../../components/Error';
 import type { ErrorProps } from '../../components/Error';
 import rawTemplate from './500.hbs?raw';
 import './500.scss';
+import { router } from '../../main.ts';
 
 const compiledTemplate = Handlebars.compile(rawTemplate);
 
@@ -28,7 +29,7 @@ export default class Page500 extends Block<Props> {
       title: '500',
       description: 'О как! Мы уже чиним',
       onBackClick: () => {
-        history.pushState({}, '', '/chat');
+        router.go('/chat');
         window.dispatchEvent(new PopStateEvent('popstate'));
       },
     };

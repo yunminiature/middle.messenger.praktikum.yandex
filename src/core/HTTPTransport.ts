@@ -11,6 +11,7 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   data?: Record<string, unknown> | string | FormData;
   timeout?: number;
+  credentials?: RequestCredentials;
 }
 
 interface InternalRequestOptions {
@@ -39,63 +40,64 @@ function queryStringify(data: Record<string, unknown>): string {
 }
 
 export class HTTPTransport {
-  public get(
-    url: string,
-    options: RequestOptions = {},
-  ): Promise<XMLHttpRequest> {
-    return (this.constructor as typeof HTTPTransport).request(
-      url,
+  private baseUrl: string;
+
+  private credentials?: RequestCredentials;
+
+  constructor(baseUrl: string = '', credentials?: RequestCredentials) {
+    this.baseUrl = baseUrl;
+    this.credentials = credentials;
+  }
+
+  public get(url: string, options: RequestOptions = {}): Promise<XMLHttpRequest> {
+    return HTTPTransport.request(
+      this.baseUrl + url,
       {
         headers: options.headers ?? {},
         method: METHODS.GET,
         data: options.data,
       },
       options.timeout,
+      options.credentials ?? this.credentials,
     );
   }
 
-  public post(
-    url: string,
-    options: RequestOptions = {},
-  ): Promise<XMLHttpRequest> {
-    return (this.constructor as typeof HTTPTransport).request(
-      url,
+  public post(url: string, options: RequestOptions = {}): Promise<XMLHttpRequest> {
+    return HTTPTransport.request(
+      this.baseUrl + url,
       {
         headers: options.headers ?? {},
         method: METHODS.POST,
         data: options.data,
       },
       options.timeout,
+      options.credentials ?? this.credentials,
     );
   }
 
-  public put(
-    url: string,
-    options: RequestOptions = {},
-  ): Promise<XMLHttpRequest> {
-    return (this.constructor as typeof HTTPTransport).request(
-      url,
+  public put(url: string, options: RequestOptions = {}): Promise<XMLHttpRequest> {
+    return HTTPTransport.request(
+      this.baseUrl + url,
       {
         headers: options.headers ?? {},
         method: METHODS.PUT,
         data: options.data,
       },
       options.timeout,
+      options.credentials ?? this.credentials,
     );
   }
 
-  public delete(
-    url: string,
-    options: RequestOptions = {},
-  ): Promise<XMLHttpRequest> {
-    return (this.constructor as typeof HTTPTransport).request(
-      url,
+  public delete(url: string, options: RequestOptions = {}): Promise<XMLHttpRequest> {
+    return HTTPTransport.request(
+      this.baseUrl + url,
       {
         headers: options.headers ?? {},
         method: METHODS.DELETE,
         data: options.data,
       },
       options.timeout,
+      options.credentials ?? this.credentials,
     );
   }
 
@@ -103,6 +105,7 @@ export class HTTPTransport {
     url: string,
     options: InternalRequestOptions,
     timeout: number = 5000,
+    credentials?: RequestCredentials,
   ): Promise<XMLHttpRequest> {
     const { headers, method, data } = options;
 
@@ -121,6 +124,10 @@ export class HTTPTransport {
       }
 
       xhr.open(method, requestUrl);
+
+      if (credentials) {
+        xhr.withCredentials = credentials === 'include' || credentials === 'same-origin';
+      }
 
       Object.entries(headers).forEach(([key, value]) => {
         xhr.setRequestHeader(key, value);

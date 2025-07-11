@@ -4,6 +4,8 @@ import { Form } from '../../components/Form';
 import type { FormProps } from '../../components/Form';
 import rawTemplate from './signup.hbs?raw';
 import './signup.scss';
+import { router } from '../../main.ts';
+import { AuthController } from '../../controllers/signup';
 
 const compiledTemplate = Handlebars.compile(rawTemplate);
 
@@ -84,13 +86,14 @@ export default class PageSignup extends Block {
         fullWidth: true,
         events: {
           click: () => {
-            history.pushState({}, '', '/login');
+            router.go('/login');
             window.dispatchEvent(new PopStateEvent('popstate'));
           },
         },
       },
       onSubmit: (values) => {
-        console.log('[PageSignup] onSubmit, получены значения:', values);
+        const { password_confirm, ...userData } = values;
+        AuthController.signup(userData);
       },
     };
 

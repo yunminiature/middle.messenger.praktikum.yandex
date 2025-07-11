@@ -5,9 +5,9 @@ import rawTemplate from './ChatItem.hbs?raw';
 import './ChatItem.scss';
 
 export interface ChatItemProps {
-  id: string;
+  id: number;
   avatar?: string;
-  name: string;
+  title: string;
   lastMessage?: {
     user?: string;
     text?: string;
@@ -41,7 +41,7 @@ export default class ChatItem extends Block {
     this.avatarInstance = new Avatar({
       size: 'm',
       src: props.avatar,
-      alt: props.name,
+      alt: props.title,
     });
   }
 
@@ -57,5 +57,10 @@ export default class ChatItem extends Block {
       container.replaceWith(this.avatarInstance.getContent());
     } else {
     }
+  }
+
+  // Публичный метод для ручного вызова жизненного цикла
+  public callComponentDidMount() {
+    this.componentDidMount();
   }
 }
