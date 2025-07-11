@@ -8,6 +8,7 @@ export type BlockClass<P extends Props = Props> = new (props?: P) => Block<P>;
 class Router {
   private static __instance: Router;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private routes: Array<Route<any>> = [];
 
   private history!: History;
