@@ -1,12 +1,14 @@
 import Route from './Route';
 import Block from './Block';
+import type { Props } from './Block';
 
-export type BlockClass = new (...args: unknown[]) => Block;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type BlockClass<P extends Props = Props> = new (props?: P) => Block<P>;
 
 class Router {
   private static __instance: Router;
 
-  private routes: Route[] = [];
+  private routes: Array<Route<any>> = [];
 
   private history!: History;
 
@@ -23,9 +25,8 @@ class Router {
     Router.__instance = this;
   }
 
-  use(pathname: string, block: BlockClass): this {
-    // @ts-expect-error: BlockClass is not strictly assignable to PageConstructor due to protected/public method mismatch
-    const route = new Route(pathname, block, { rootQuery: this._rootQuery });
+  use<P extends Props = Props>(pathname: string, block: BlockClass<P>): this {
+    const route = new Route<P>(pathname, block, { rootQuery: this._rootQuery });
     this.routes.push(route);
     return this;
   }

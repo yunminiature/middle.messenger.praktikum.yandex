@@ -10,8 +10,9 @@ import { router } from '../../main.ts';
 import store, { StoreEvents } from '../../core/Store';
 import { ProfileController } from '../../controllers/profile';
 import { AuthAPI } from '../../api/auth-api';
+import type { Props } from '../../core/Block';
 
-export interface ProfilePageProps {
+export interface ProfilePageProps extends Props {
   email: string;
   login: string;
   first_name: string;
@@ -37,11 +38,9 @@ export default class ProfilePage extends Block<ProfilePageProps> {
 
   private logoutButton?: Button;
 
-  private authApi = new AuthAPI();
-
   constructor(props: ProfilePageProps = {} as ProfilePageProps) {
     const user = store.get('user') || {};
-    let avatar = user.avatar ?? props.avatar;
+    let avatar = (user as { avatar?: string }).avatar ?? props.avatar;
     if (avatar && !avatar.startsWith('http')) {
       avatar = `https://ya-praktikum.tech/api/v2/resources${avatar}`;
     }
@@ -54,7 +53,7 @@ export default class ProfilePage extends Block<ProfilePageProps> {
 
     store.on(StoreEvents.Updated, () => {
       const newUser = store.get('user') || {};
-      let newAvatar = newUser.avatar;
+      let newAvatar = (newUser as { avatar?: string }).avatar;
       if (newAvatar && !newAvatar.startsWith('http')) {
         newAvatar = `https://ya-praktikum.tech/api/v2/resources${newAvatar}`;
       }
@@ -178,7 +177,7 @@ export default class ProfilePage extends Block<ProfilePageProps> {
       warning: true,
       events: {
         click: async () => {
-          await this.authApi.logout();
+          await AuthAPI.logout();
           store.set('user', null);
           router.go('/login');
         },

@@ -11,12 +11,13 @@ import './chat.scss';
 import { router } from '../../main.ts';
 import { ChatController } from '../../controllers/chat';
 import store from '../../core/Store';
+import type { Props } from '../../core/Block';
 
 const PROFILE_ICON = new URL('/icons/right.svg', import.meta.url).href;
 const SETTINGS_ICON = new URL('/icons/setting.svg', import.meta.url).href;
 const ATTACHMENTS_ICON = new URL('/icons/attachments.svg', import.meta.url).href;
 
-export interface PageChatProps {
+export interface PageChatProps extends Props {
   chats: ChatItemProps[];
   activeChatId?: number;
   activeChat?: ChatItemProps & { messages?: MessageItemProps[] };
@@ -42,7 +43,8 @@ export default class PageChat extends Block<PageChatProps> {
   async componentDidMount() {
     await ChatController.initPageChat();
 
-    const chatsFromStore = store.get('chats') ?? [];
+    const chatsFromStoreRaw = store.get('chats');
+    const chatsFromStore = Array.isArray(chatsFromStoreRaw) ? chatsFromStoreRaw : [];
     if (chatsFromStore.length && !this.props.activeChatId) {
       const lastChat = chatsFromStore[chatsFromStore.length - 1];
       this.setProps({
