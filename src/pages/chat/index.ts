@@ -2,29 +2,24 @@ import Handlebars from 'handlebars';
 import Block from '../../core/Block';
 import { Button } from '../../components/Button';
 import { ChatList } from '../../components/ChatList';
-import type { ChatItemProps } from '../../components/ChatItem';
 import { Avatar } from '../../components/Avatar';
 import { MessagesList } from '../../components/MessagesList';
+import type { ChatItemProps } from '../../components/ChatItem';
 import type { MessageItemProps } from '../../components/MessageItem';
 import rawTemplate from './chat.hbs?raw';
 import './chat.scss';
+import { router } from '../../main.ts';
+import { ChatController } from '../../controllers/chat';
+import store from '../../core/Store';
 
 const PROFILE_ICON = new URL('/icons/right.svg', import.meta.url).href;
 const SETTINGS_ICON = new URL('/icons/setting.svg', import.meta.url).href;
 const ATTACHMENTS_ICON = new URL('/icons/attachments.svg', import.meta.url).href;
 
-export interface ActiveChat {
-  id: string;
-  name: string;
-  avatar?: string;
-  messages: MessageItemProps[];
-}
-
 export interface PageChatProps {
   chats: ChatItemProps[];
-  activeChatId?: string;
-  activeChat?: ActiveChat;
-  onChatSelect?: (chatId: string) => void;
+  activeChatId?: number;
+  activeChat?: ChatItemProps & { messages?: MessageItemProps[] };
 }
 
 export default class PageChat extends Block<PageChatProps> {
@@ -40,32 +35,58 @@ export default class PageChat extends Block<PageChatProps> {
 
   private messagesList?: MessagesList;
 
-  constructor(props: PageChatProps) {
+  constructor(props: PageChatProps = { chats: [] }) {
     super('div', props);
   }
 
-  protected init(): void {
-    this.createChildren();
-  }
+  async componentDidMount() {
+    await ChatController.initPageChat();
 
-  protected componentDidMount(): void {
+    const chatsFromStore = store.get('chats') ?? [];
+    if (chatsFromStore.length && !this.props.activeChatId) {
+      const lastChat = chatsFromStore[chatsFromStore.length - 1];
+      this.setProps({
+        activeChatId: lastChat.id,
+        activeChat: { ...lastChat, messages: [] },
+      });
+    }
+
+    store.on('Updated', () => {
+      const updatedChats = store.get('chats');
+      const chats: ChatItemProps[] = Array.isArray(updatedChats) ? updatedChats : [];
+      let activeChatId = this.props.activeChatId;
+      let activeChat = this.props.activeChat;
+
+      if (typeof activeChatId === 'string') {
+        activeChatId = Number(activeChatId);
+      }
+
+      const found = chats.find((c) => Number(c.id) === Number(activeChatId));
+      if (chats.length && activeChatId && found) {
+        activeChat = { ...found, messages: activeChat?.messages ?? [] };
+      } else if (chats.length) {
+        const firstChat = chats[0];
+        activeChatId = Number(firstChat.id);
+        activeChat = { ...firstChat, messages: [] };
+      } else {
+        activeChatId = undefined;
+        activeChat = undefined;
+      }
+
+      const storeMessages = store.get('messages') as MessageItemProps[] || [];
+      if (activeChat) {
+        activeChat = { ...activeChat, messages: storeMessages };
+      }
+
+      this.setProps({ chats, activeChatId, activeChat });
+    });
+    this.createChildren();
     this.renderChildrenIntoStubs();
     this.attachHandlers();
   }
 
-  protected componentDidUpdate(): boolean {
-    this.createChildren();
-    this.renderChildrenIntoStubs();
-    this.attachHandlers();
-    return false;
-  }
-
-  private createChildren() {
-    const {
-      chats,
-      activeChatId,
-      activeChat,
-    } = this.props;
+  protected createChildren() {
+    const { chats = [], activeChatId, activeChat } = this.props;
 
     this.profileButton = new Button({
       type: 'button',
@@ -75,16 +96,16 @@ export default class PageChat extends Block<PageChatProps> {
       iconRight: PROFILE_ICON,
       events: {
         click: () => {
-          history.pushState({}, '', '/profile');
+          router.go('/profile');
           window.dispatchEvent(new PopStateEvent('popstate'));
         },
       },
     });
 
     this.chatList = new ChatList({
-      chats: chats,
-      activeChatId: activeChatId,
-      onChatSelect: (chatId: string) => {
+      chats,
+      activeChatId,
+      onChatSelect: (chatId: number) => {
         this.handleChatSelect(chatId);
       },
     });
@@ -92,12 +113,12 @@ export default class PageChat extends Block<PageChatProps> {
     if (activeChat) {
       this.avatar = new Avatar({
         src: activeChat.avatar,
-        alt: activeChat.name,
+        alt: activeChat.title,
         size: 's',
       });
 
       this.messagesList = new MessagesList({
-        messages: activeChat.messages,
+        messages: activeChat.messages || [],
       });
 
       this.settingsButton = new Button({
@@ -105,10 +126,7 @@ export default class PageChat extends Block<PageChatProps> {
         view: 'default',
         clear: true,
         iconRight: SETTINGS_ICON,
-        events: {
-          click: () => {
-          },
-        },
+        events: {},
       });
 
       this.attachmentsButton = new Button({
@@ -116,10 +134,7 @@ export default class PageChat extends Block<PageChatProps> {
         view: 'default',
         clear: true,
         iconRight: ATTACHMENTS_ICON,
-        events: {
-          click: () => {
-          },
-        },
+        events: {},
       });
     } else {
       this.avatar = undefined;
@@ -129,11 +144,18 @@ export default class PageChat extends Block<PageChatProps> {
     }
   }
 
-  private handleChatSelect(chatId: string) {
-    this.setProps({ activeChatId: chatId });
-
-    if (this.props.onChatSelect) {
-      this.props.onChatSelect(chatId);
+  private handleChatSelect(chatId: number) {
+    if (Number(this.props.activeChatId) === Number(chatId)) {
+      // Уже выбран — ничего не делаем!
+      return;
+    }
+    const chat = (this.props.chats || []).find((c) => Number(c.id) === Number(chatId));
+    if (chat) {
+      ChatController.connectToChat(chatId);
+      this.setProps({
+        activeChatId: Number(chatId),
+        activeChat: { ...chat, messages: [] },
+      });
     }
   }
 
@@ -141,115 +163,73 @@ export default class PageChat extends Block<PageChatProps> {
     const content = this.getContent();
 
     const profileStub = content.querySelector('[data-id="profile-button"]');
-    if (profileStub) {
+    if (profileStub && this.profileButton) {
       profileStub.innerHTML = '';
-      if (this.profileButton) {
-        profileStub.appendChild(this.profileButton.getContent());
-      }
+      profileStub.appendChild(this.profileButton.getContent());
     }
 
     const chatListStub = content.querySelector('[data-id="chatlist"]');
-    if (chatListStub) {
+    if (chatListStub && this.chatList) {
       chatListStub.innerHTML = '';
-      if (this.chatList) {
-        chatListStub.appendChild(this.chatList.getContent());
-      }
+      chatListStub.appendChild(this.chatList.getContent());
     }
 
     const avatarStub = content.querySelector('[data-id="avatar"]');
-    if (avatarStub) {
+    if (avatarStub && this.avatar) {
       avatarStub.innerHTML = '';
-      if (this.avatar) {
-        avatarStub.appendChild(this.avatar.getContent());
-      }
+      avatarStub.appendChild(this.avatar.getContent());
     }
 
     const settingsStub = content.querySelector('[data-id="settings-button"]');
-    if (settingsStub) {
+    if (settingsStub && this.settingsButton) {
       settingsStub.innerHTML = '';
-      if (this.settingsButton) {
-        settingsStub.appendChild(this.settingsButton.getContent());
-      }
+      settingsStub.appendChild(this.settingsButton.getContent());
     }
 
     const messagesStub = content.querySelector('[data-id="messageslist"]');
-    if (messagesStub) {
+    if (messagesStub && this.messagesList) {
       messagesStub.innerHTML = '';
-      if (this.messagesList) {
-        messagesStub.appendChild(this.messagesList.getContent());
-      }
+      messagesStub.appendChild(this.messagesList.getContent());
     }
 
     const attachmentsStub = content.querySelector('[data-id="attachments-button"]');
-    if (attachmentsStub) {
+    if (attachmentsStub && this.attachmentsButton) {
       attachmentsStub.innerHTML = '';
-      if (this.attachmentsButton) {
-        attachmentsStub.appendChild(this.attachmentsButton.getContent());
-      }
+      attachmentsStub.appendChild(this.attachmentsButton.getContent());
     }
   }
 
   private attachHandlers() {
     const content = this.getContent();
 
-    const chatListInstance = this.chatList;
-
-    const searchInput = content.querySelector(
-      '[data-id="search-input"]',
-    ) as HTMLInputElement | null;
-
+    const searchInput = content.querySelector('[data-id="search-input"]') as HTMLInputElement | null;
     if (searchInput) {
       searchInput.oninput = (e: Event) => {
-
         const target = e.target as HTMLInputElement;
         const query = target.value.trim().toLowerCase();
-
         const allChats = this.props.chats || [];
         const filteredChats = allChats.filter((chat) =>
-          chat.name.toLowerCase().includes(query),
+          (chat.title || '').toLowerCase().includes(query),
         );
-
-        if (chatListInstance) {
-          chatListInstance.setProps({ chats: filteredChats });
-        }
+        this.chatList?.setProps({ chats: filteredChats });
       };
     }
 
-    const textarea = content.querySelector(
-      '[data-id="message-textarea"]',
-    ) as HTMLTextAreaElement | null;
+    const textarea = content.querySelector('[data-id="message-textarea"]') as HTMLTextAreaElement | null;
     const sendBtn = content.querySelector('[data-id="send-button"]');
 
     const sendCurrentMessage = () => {
       if (!textarea) return;
       const text = textarea.value.trim();
       if (!text || !this.props.activeChat) return;
-
-      const now = new Date();
-      const hours = now.getHours().toString().padStart(2, '0');
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      const time = `${hours}:${minutes}`;
-
-      const newMsg: MessageItemProps = {
-        text: text,
-        time: time,
-      };
-
+      ChatController.sendMessage(text);
       textarea.value = '';
-
-      const updatedChat: ActiveChat = {
-        ...this.props.activeChat,
-        messages: [...this.props.activeChat.messages, newMsg],
-      };
-      this.setProps({ activeChat: updatedChat });
     };
 
     if (sendBtn) {
       sendBtn.replaceWith(sendBtn.cloneNode(true));
       const newSend = content.querySelector('[data-id="send-button"]');
-      newSend?.addEventListener('click', () => {
-        sendCurrentMessage();
-      });
+      newSend?.addEventListener('click', sendCurrentMessage);
     }
 
     if (textarea) {
@@ -262,11 +242,21 @@ export default class PageChat extends Block<PageChatProps> {
     }
   }
 
+  protected componentDidUpdate(): boolean {
+    this.createChildren();
+    this.renderChildrenIntoStubs();
+    this.attachHandlers();
+    return true;
+  }
+
   protected compile(): string {
     const templateFn = Handlebars.compile(rawTemplate);
+    const activeChat = this.props.activeChat
+      ? JSON.parse(JSON.stringify(this.props.activeChat))
+      : undefined;
     return templateFn({
       chats: this.props.chats,
-      activeChat: this.props.activeChat,
+      activeChat,
     });
   }
 }

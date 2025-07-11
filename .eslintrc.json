@@ -20,7 +20,7 @@
   },
   "rules": {
     "no-console": "off",
-
+    "@typescript-eslint/naming-convention": "off",
     "import/extensions": "off",
 
     "import/no-extraneous-dependencies": [

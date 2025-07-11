@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import Handlebars from 'handlebars';
 import Block from '../../core/Block';
 import { Form } from '../../components/Form';
@@ -7,6 +6,10 @@ import { Button } from '../../components/Button';
 import { FileUploadModal } from '../../components';
 import rawTemplate from './profile.hbs?raw';
 import './profile.scss';
+import { router } from '../../main.ts';
+import store, { StoreEvents } from '../../core/Store';
+import { ProfileController } from '../../controllers/profile';
+import { AuthAPI } from '../../api/auth-api';
 
 export interface ProfilePageProps {
   email: string;
@@ -34,25 +37,40 @@ export default class ProfilePage extends Block<ProfilePageProps> {
 
   private logoutButton?: Button;
 
-  constructor(props: ProfilePageProps) {
-    super('div', {
-      ...props,
-      mode: props.mode || 'view',
-    });
+  private authApi = new AuthAPI();
+
+  constructor(props: ProfilePageProps = {} as ProfilePageProps) {
+    const user = store.get('user') || {};
+    let avatar = user.avatar ?? props.avatar;
+    if (avatar && !avatar.startsWith('http')) {
+      avatar = `https://ya-praktikum.tech/api/v2/resources${avatar}`;
+    }
+
+    super('div', { ...user, mode: 'view', ...props, avatar });
 
     this.uploadModal = new FileUploadModal({
-      uploadFn: (file: File) => {
-        console.log('[PageProfile avatar edit] получено значение:', file);
-        return Promise.resolve();
-      },
+      uploadFn: (file: File) => ProfileController.updateAvatar(file),
+    });
+
+    store.on(StoreEvents.Updated, () => {
+      const newUser = store.get('user') || {};
+      let newAvatar = newUser.avatar;
+      if (newAvatar && !newAvatar.startsWith('http')) {
+        newAvatar = `https://ya-praktikum.tech/api/v2/resources${newAvatar}`;
+      }
+      this.setProps({ ...newUser, avatar: newAvatar });
     });
   }
 
-  protected init(): void {
+  async componentDidMount() {
+    if (!store.get('user')) {
+      await ProfileController.fetchProfile();
+    }
+    if (!store.get('user')) {
+      router.go('/login');
+      return;
+    }
     this.createFormsAndButtons();
-  }
-
-  protected componentDidMount(): void {
     this.renderChildrenIntoStubs();
     this.attachStaticEventHandlers();
   }
@@ -61,17 +79,17 @@ export default class ProfilePage extends Block<ProfilePageProps> {
     this.createFormsAndButtons();
     this.renderChildrenIntoStubs();
     this.attachStaticEventHandlers();
-    return false;
+    return true;
   }
 
   private createFormsAndButtons() {
     const {
-      email,
-      login,
-      first_name,
-      second_name,
-      chat_name,
-      phone,
+      email = '',
+      login = '',
+      first_name = '',
+      second_name = '',
+      chat_name = '',
+      phone = '',
     } = this.props;
 
     const viewInputs: InputProps[] = [
@@ -104,8 +122,8 @@ export default class ProfilePage extends Block<ProfilePageProps> {
         view: 'accent',
         fullWidth: true,
       },
-      onSubmit: (values: Record<string, string>) => {
-        console.log('[PageProfile edit] onSubmit, получены значения:', values);
+      onSubmit: async (values: Record<string, string>) => {
+        await ProfileController.updateProfile(values);
         this.setProps({ mode: 'view' });
       },
     });
@@ -124,8 +142,11 @@ export default class ProfilePage extends Block<ProfilePageProps> {
         view: 'accent',
         fullWidth: true,
       },
-      onSubmit: (values: Record<string, string>) => {
-        console.log('[PageProfile password edit] onSubmit, получены значения:', values);
+      onSubmit: async (values: Record<string, string>) => {
+        await ProfileController.updatePassword({
+          oldPassword: values.oldPassword,
+          newPassword: values.newPassword,
+        });
         this.setProps({ mode: 'view' });
       },
     });
@@ -136,9 +157,7 @@ export default class ProfilePage extends Block<ProfilePageProps> {
       view: 'accent',
       clear: true,
       events: {
-        click: () => {
-          this.setProps({ mode: 'editData' });
-        },
+        click: () => this.setProps({ mode: 'editData' }),
       },
     });
 
@@ -148,9 +167,7 @@ export default class ProfilePage extends Block<ProfilePageProps> {
       view: 'accent',
       clear: true,
       events: {
-        click: () => {
-          this.setProps({ mode: 'editPassword' });
-        },
+        click: () => this.setProps({ mode: 'editPassword' }),
       },
     });
 
@@ -160,9 +177,10 @@ export default class ProfilePage extends Block<ProfilePageProps> {
       clear: true,
       warning: true,
       events: {
-        click: () => {
-          history.pushState({}, '', '/login');
-          window.dispatchEvent(new PopStateEvent('popstate'));
+        click: async () => {
+          await this.authApi.logout();
+          store.set('user', null);
+          router.go('/login');
         },
       },
     });
@@ -173,24 +191,19 @@ export default class ProfilePage extends Block<ProfilePageProps> {
 
     const actionsList = content.querySelector('[data-id="actions-list"]') as HTMLElement | null;
     if (actionsList) {
-      if (this.props.mode === 'view') {
-        actionsList.hidden = false;
-      } else {
-        actionsList.hidden = true;
-      }
+      actionsList.hidden = this.props.mode !== 'view';
     }
 
     const formContainer = content.querySelector('[data-id="form-stub"]');
     if (formContainer) {
       formContainer.innerHTML = '';
-      const { mode = 'view' } = this.props;
       let toAppend: HTMLElement | undefined;
 
-      if (mode === 'view' && this.viewForm) {
+      if (this.props.mode === 'view' && this.viewForm) {
         toAppend = this.viewForm.getContent();
-      } else if (mode === 'editData' && this.editDataForm) {
+      } else if (this.props.mode === 'editData' && this.editDataForm) {
         toAppend = this.editDataForm.getContent();
-      } else if (mode === 'editPassword' && this.editPasswordForm) {
+      } else if (this.props.mode === 'editPassword' && this.editPasswordForm) {
         toAppend = this.editPasswordForm.getContent();
       }
 
@@ -205,21 +218,15 @@ export default class ProfilePage extends Block<ProfilePageProps> {
     if (this.props.mode === 'view') {
       if (editDataStub) {
         editDataStub.innerHTML = '';
-        if (this.editDataButton) {
-          editDataStub.appendChild(this.editDataButton.getContent());
-        }
+        if (this.editDataButton) editDataStub.appendChild(this.editDataButton.getContent());
       }
       if (editPasswordStub) {
         editPasswordStub.innerHTML = '';
-        if (this.editPasswordButton) {
-          editPasswordStub.appendChild(this.editPasswordButton.getContent());
-        }
+        if (this.editPasswordButton) editPasswordStub.appendChild(this.editPasswordButton.getContent());
       }
       if (logoutStub) {
         logoutStub.innerHTML = '';
-        if (this.logoutButton) {
-          logoutStub.appendChild(this.logoutButton.getContent());
-        }
+        if (this.logoutButton) logoutStub.appendChild(this.logoutButton.getContent());
       }
     } else {
       if (editDataStub) editDataStub.innerHTML = '';
@@ -239,8 +246,7 @@ export default class ProfilePage extends Block<ProfilePageProps> {
         if (this.props.mode && this.props.mode !== 'view') {
           this.setProps({ mode: 'view' });
         } else {
-          history.pushState({}, '', '/chat');
-          window.dispatchEvent(new PopStateEvent('popstate'));
+          router.go('/chat');
         }
       });
     }
