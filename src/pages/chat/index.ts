@@ -21,6 +21,14 @@ interface WSMessage {
   file?: unknown;
 }
 
+function formatTime(isoString?: string): string {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
 const PROFILE_ICON = new URL('/icons/right.svg', import.meta.url).href;
 const SETTINGS_ICON = new URL('/icons/setting.svg', import.meta.url).href;
 const ATTACHMENTS_ICON = new URL('/icons/attachments.svg', import.meta.url).href;
@@ -77,6 +85,12 @@ export default class PageChat extends Block<PageChatProps> {
     return true;
   }
 
+  public componentWillUnmount() {
+    store.set('activeChat', undefined);
+    store.set('activeChatId', undefined);
+    this.setProps({ activeChatId: undefined, activeChat: undefined });
+  }
+
   private createChildren() {
     const {
       chats = [],
@@ -92,6 +106,7 @@ export default class PageChat extends Block<PageChatProps> {
       iconRight: PROFILE_ICON,
       events: {
         click: () => {
+          this.componentWillUnmount();
           history.pushState({}, '', '/profile');
           window.dispatchEvent(new PopStateEvent('popstate'));
         },
@@ -147,31 +162,56 @@ export default class PageChat extends Block<PageChatProps> {
 
   private async handleChatSelect(chatId: number) {
     this.setProps({ activeChatId: chatId });
+
+    const chats = this.props.chats || [];
+    const activeChat = chats.find((c) => c.id === chatId);
+    if (activeChat) {
+      store.set('activeChat', {
+        ...activeChat,
+        messages: [],
+      });
+    }
+
     ChatController.connectToChat(chatId, {
       onMessage: (data: unknown) => {
+        const user = store.get('user') as { id: number } | undefined;
+        const myUserId = user?.id;
         let messages: MessageItemProps[] = [];
+        const currentActiveChat = store.get('activeChat') as ActiveChat | undefined;
+        const prevMessages = currentActiveChat?.messages || [];
+
         if (Array.isArray(data)) {
-          messages = (data as WSMessage[]).map((msg) => ({
+          const newMessages = (data as WSMessage[]).map((msg) => ({
             user: msg.user_id,
             text: msg.content,
-            time: msg.time || '',
+            time: formatTime(msg.time),
+            isMine: msg.user_id === myUserId,
+            id: msg.id,
           }));
+          const allMessages = [...newMessages, ...prevMessages].reduce<MessageItemProps[]>((acc, msg) => {
+            if (!acc.find((m) => m.id === msg.id)) acc.push(msg);
+            return acc;
+          }, []);
+          messages = allMessages;
         } else if (data && typeof data === 'object' && (data as WSMessage).type === 'message') {
           const msg = data as WSMessage;
-          messages = [
-            {
-              user: msg.user_id,
-              text: msg.content,
-              time: msg.time || '',
-            },
-          ];
+          const newMsg = {
+            user: msg.user_id,
+            text: msg.content,
+            time: formatTime(msg.time),
+            isMine: msg.user_id === myUserId,
+            id: msg.id,
+          };
+          messages = prevMessages.find((m) => m.id === newMsg.id)
+            ? prevMessages
+            : [newMsg, ...prevMessages];
         }
-        // Обновляем store для activeChat
-        const chats = this.props.chats || [];
-        const activeChat = chats.find((c) => c.id === chatId);
-        if (activeChat) {
+
+        const chatsList = this.props.chats || [];
+        const foundActiveChat = chatsList.find((c) => c.id === chatId);
+        if (foundActiveChat) {
           store.set('activeChat', {
-            ...activeChat,
+            ...foundActiveChat,
             messages,
           });
         }
@@ -183,9 +223,14 @@ export default class PageChat extends Block<PageChatProps> {
     const chatsFromStoreRaw = store.get('chats');
     const chatsFromStore: ChatItemProps[] = Array.isArray(chatsFromStoreRaw) ? chatsFromStoreRaw : [];
     const activeChatId = this.props.activeChatId;
-    const chat = chatsFromStore.find((c) => c.id === activeChatId);
-    const activeChatFromStore = store.get('activeChat') as ActiveChat | undefined;
-    const activeChat: ActiveChat | undefined = activeChatFromStore || (chat ? { ...chat, messages: [] } : undefined);
+    let activeChat: ActiveChat | undefined = undefined;
+
+    if (activeChatId !== undefined) {
+      const chat = chatsFromStore.find((c) => c.id === activeChatId);
+      const activeChatFromStore = store.get('activeChat') as ActiveChat | undefined;
+      activeChat = activeChatFromStore || (chat ? { ...chat, messages: [] } : undefined);
+    }
+
     this.setProps({ chats: chatsFromStore, activeChat });
   }
 
@@ -307,7 +352,6 @@ export default class PageChat extends Block<PageChatProps> {
 
   protected compile(): string {
     const templateFn = Handlebars.compile(rawTemplate);
-    // Снимаем Proxy с activeChat, если он есть
     const activeChat = this.props.activeChat
       ? JSON.parse(JSON.stringify(this.props.activeChat))
       : undefined;

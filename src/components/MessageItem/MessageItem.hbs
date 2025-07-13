@@ -1,11 +1,11 @@
-<div class="message-item {{#if user}}message-item--their{{else}}message-item--mine{{/if}}">
+<div class="message-item {{#if isMine}}message-item--mine{{else}}message-item--their{{/if}}">
     {{#if date}}
         <div class="message-item__date-separator">{{date}}</div>
     {{/if}}
     {{#if text}}
         <div class="message-item__bubble">
             <p class="message-item__text">{{text}}</p>
-            <span class="message-item__time {{#unless user}}message-item__time-mine{{/unless}}">{{time}}</span>
+            <span class="message-item__time {{#if isMine}}message-item__time-mine{{/if}}">{{time}}</span>
             {{#if status}}
                 <span class="message-item__status message-item__status--{{status}}"></span>
             {{/if}}

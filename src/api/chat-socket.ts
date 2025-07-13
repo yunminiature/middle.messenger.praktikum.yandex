@@ -11,7 +11,7 @@ export class ChatSocket {
 
   private onError: ((e: Event) => void) | null = null;
 
-  constructor(chatId: number, events?: {
+  constructor(userId: number, chatId: number, token: string, events?: {
     onOpen?: () => void;
     onMessage?: (data: unknown) => void;
     onClose?: () => void;
@@ -24,11 +24,11 @@ export class ChatSocket {
       this.onError = events.onError || null;
     }
 
-    this.connect(chatId);
+    this.connect(userId, chatId, token);
   }
 
-  connect(chatId: number) {
-    this.ws = new WebSocket('wss://ya-praktikum.tech/ws/chats/' + chatId + '/');
+  connect(userId: number, chatId: number, token: string) {
+    this.ws = new WebSocket(`wss://ya-praktikum.tech/ws/chats/${userId}/${chatId}/${token}`);
 
     this.ws.addEventListener('open', () => {
       if (this.onOpen) this.onOpen();

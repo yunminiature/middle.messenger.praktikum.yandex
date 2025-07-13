@@ -15,6 +15,8 @@ export interface MessageItemProps {
   time: string;
   status?: 'sent' | 'read';
   content?: MessageItemContent;
+  isMine?: boolean;
+  id?: string;
 }
 
 export default class MessageItem extends Block {

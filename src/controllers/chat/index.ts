@@ -8,7 +8,6 @@ export class ChatController {
   static async checkAuthAndLoadChats() {
     let user = store.get('user');
     if (!user) {
-      // Пробуем получить пользователя через API
       try {
         const userXhr = await AuthAPI.me();
         if (userXhr.status !== 200) {
@@ -36,7 +35,7 @@ export class ChatController {
 
   static chatSocket: ChatSocket | null = null;
 
-  static connectToChat(chatId: number, events?: {
+  static async connectToChat(chatId: number, events?: {
     onOpen?: () => void;
     onMessage?: (data: unknown) => void;
     onClose?: () => void;
@@ -45,6 +44,15 @@ export class ChatController {
     if (ChatController.chatSocket) {
       ChatController.chatSocket.close();
     }
-    ChatController.chatSocket = new ChatSocket(chatId, events);
+    const tokenXhr = await ChatAPI.getToken(chatId);
+    if (tokenXhr.status !== 200) {
+      throw new Error('Ошибка получения токена для чата');
+    }
+    const { token } = JSON.parse(tokenXhr.response);
+    const user = store.get('user') as { id: number } | undefined;
+    if (!user || !user.id) {
+      throw new Error('Нет userId');
+    }
+    ChatController.chatSocket = new ChatSocket(user.id, chatId, token, events);
   }
 }
