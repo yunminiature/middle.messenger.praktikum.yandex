@@ -52,8 +52,8 @@ export default class PageChat extends Block<PageChatProps> {
 
   private messagesList?: MessagesList;
 
-  constructor(props: PageChatProps) {
-    super('div', props);
+  constructor(props?: PageChatProps) {
+    super('div', { chats: [], ...props });
   }
 
   protected async componentDidMount(): Promise<void> {
