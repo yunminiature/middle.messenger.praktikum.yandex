@@ -76,8 +76,10 @@ export default class ProfilePage extends Block<ProfilePageProps> {
 
   protected componentDidUpdate(): boolean {
     this.createFormsAndButtons();
-    this.renderChildrenIntoStubs();
-    this.attachStaticEventHandlers();
+    setTimeout(() => {
+      this.renderChildrenIntoStubs();
+      this.attachStaticEventHandlers();
+    });
     return true;
   }
 

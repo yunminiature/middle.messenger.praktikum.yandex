@@ -9,6 +9,10 @@ export const AuthController = {
 
       if (xhr.status !== 200) {
         const error = JSON.parse(xhr.response);
+        if (error.reason === 'User already in system') {
+          router.go('/chat');
+          return;
+        }
         alert(error.reason || 'Ошибка авторизации');
         return;
       }
