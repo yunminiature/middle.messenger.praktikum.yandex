@@ -1,0 +1,29 @@
+.dropdown {
+  position: relative;
+
+  &-trigger {
+    display: inline-block;
+  }
+
+  &-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
+    display: none;
+    left: auto;
+    min-width: 160px;
+    padding: 15px;
+    position: absolute;
+    right: 0;
+    top: 40px;
+    z-index: 100;
+
+    & > * + * {
+      margin-top: 12px;
+    }
+
+    &--visible {
+      display: block;
+    }
+  }
+}

@@ -17,7 +17,7 @@ export interface ProfilePageProps extends Props {
   login: string;
   first_name: string;
   second_name: string;
-  chat_name: string;
+  display_name: string;
   phone: string;
   avatar?: string;
   mode?: 'view' | 'editData' | 'editPassword';
@@ -89,7 +89,7 @@ export default class ProfilePage extends Block<ProfilePageProps> {
       login = '',
       first_name = '',
       second_name = '',
-      chat_name = '',
+      display_name = '',
       phone = '',
     } = this.props;
 
@@ -98,7 +98,7 @@ export default class ProfilePage extends Block<ProfilePageProps> {
       { name: 'login', type: 'text', label: 'Логин', value: login, disabled: true, labelPlacement: 'left' },
       { name: 'first_name', type: 'text', label: 'Имя', value: first_name, disabled: true, labelPlacement: 'left' },
       { name: 'second_name', type: 'text', label: 'Фамилия', value: second_name, disabled: true, labelPlacement: 'left' },
-      { name: 'chat_name', type: 'text', label: 'Имя в чате', value: chat_name, disabled: true, labelPlacement: 'left' },
+      { name: 'display_name', type: 'text', label: 'Имя в чате', value: display_name, disabled: true, labelPlacement: 'left' },
       { name: 'phone', type: 'text', label: 'Телефон', value: phone, disabled: true, labelPlacement: 'left' },
     ];
     this.viewForm = new Form({
@@ -111,7 +111,7 @@ export default class ProfilePage extends Block<ProfilePageProps> {
       { name: 'login', type: 'text', label: 'Логин', value: login, required: true, labelPlacement: 'left' },
       { name: 'first_name', type: 'text', label: 'Имя', value: first_name, required: true, labelPlacement: 'left' },
       { name: 'second_name', type: 'text', label: 'Фамилия', value: second_name, required: true, labelPlacement: 'left' },
-      { name: 'chat_name', type: 'text', label: 'Имя в чате', value: chat_name, required: true, labelPlacement: 'left' },
+      { name: 'display_name', type: 'text', label: 'Имя в чате', value: display_name, required: true, labelPlacement: 'left' },
       { name: 'phone', type: 'text', label: 'Телефон', value: phone, required: true, labelPlacement: 'left' },
     ];
     this.editDataForm = new Form({

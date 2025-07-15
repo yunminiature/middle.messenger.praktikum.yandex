@@ -1,8 +1,8 @@
 import { ChatAPI } from '../../api/chat-api';
 import { ChatSocket } from '../../api/chat-socket';
-import { AuthAPI } from '../../api/auth-api';
-import store from '../../core/Store';
-import { router } from '../../main';
+import { AuthAPI }   from '../../api/auth-api';
+import store         from '../../core/Store';
+import { router }    from '../../main';
 
 export class ChatController {
   static async checkAuthAndLoadChats() {
@@ -21,6 +21,7 @@ export class ChatController {
         return;
       }
     }
+
     try {
       const xhr = await ChatAPI.getChats();
       if (xhr.status !== 200) {
@@ -35,12 +36,15 @@ export class ChatController {
 
   static chatSocket: ChatSocket | null = null;
 
-  static async connectToChat(chatId: number, events?: {
-    onOpen?: () => void;
-    onMessage?: (data: unknown) => void;
-    onClose?: () => void;
-    onError?: (e: Event) => void;
-  }) {
+  static async connectToChat(
+    chatId: number,
+    events?: {
+      onOpen?: () => void;
+      onMessage?: (data: unknown) => void;
+      onClose?: () => void;
+      onError?: (e: Event) => void;
+    },
+  ) {
     if (ChatController.chatSocket) {
       ChatController.chatSocket.close();
     }
@@ -50,9 +54,42 @@ export class ChatController {
     }
     const { token } = JSON.parse(tokenXhr.response);
     const user = store.get('user') as { id: number } | undefined;
-    if (!user || !user.id) {
+    if (!user?.id) {
       throw new Error('Нет userId');
     }
     ChatController.chatSocket = new ChatSocket(user.id, chatId, token, events);
+  }
+
+  static async searchUserByLogin(login: string) {
+    const xhr = await ChatAPI.searchUser(login);
+    if (xhr.status !== 200) {
+      throw new Error('Ошибка при поиске пользователя');
+    }
+    const users = JSON.parse(xhr.response) as Array<{
+      id: number;
+      login: string;
+      first_name: string;
+      second_name: string;
+    }>;
+    if (users.length === 0) {
+      throw new Error(`Пользователь "${login}" не найден`);
+    }
+    return users[0];
+  }
+
+  static async addUserToChat(chatId: number, userId: number) {
+    const addXhr = await ChatAPI.addUsersToChat(chatId, [userId]);
+    if (addXhr.status !== 200) {
+      throw new Error('Не удалось добавить пользователя в чат');
+    }
+    await this.checkAuthAndLoadChats();
+  }
+
+  static async removeUserFromChat(chatId: number, userId: number) {
+    const delXhr = await ChatAPI.removeUsersFromChat(chatId, [userId]);
+    if (delXhr.status !== 200) {
+      throw new Error('Не удалось удалить пользователя из чата');
+    }
+    await this.checkAuthAndLoadChats();
   }
 }

@@ -10,6 +10,8 @@ import rawTemplate from './chat.hbs?raw';
 import './chat.scss';
 import { ChatController } from '../../controllers/chat';
 import store, { StoreEvents } from '../../core/Store';
+import { Dropdown } from '../../components/Dropdown';
+import { Modal } from '../../components/Modal';
 
 interface WSMessage {
   chat_id?: number;
@@ -27,6 +29,15 @@ function formatTime(isoString?: string): string {
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes}`;
+}
+
+function isErrorWithMessage(err: unknown): err is { message: string } {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'message' in err &&
+    typeof (err as { message?: unknown }).message === 'string'
+  );
 }
 
 const PROFILE_ICON = new URL('/icons/right.svg', import.meta.url).href;
@@ -52,13 +63,31 @@ export default class PageChat extends Block<PageChatProps> {
 
   private chatList?: ChatList;
 
-  private settingsButton?: Button;
+  private addUserModal?: Modal;
+
+  private removeUserModal?: Modal;
+
+  private settingsButton?: Dropdown;
 
   private attachmentsButton?: Button;
 
   private avatar?: Avatar;
 
   private messagesList?: MessagesList;
+
+  private pendingAddUser?: {
+    id: number;
+    first_name: string;
+    second_name: string;
+    login: string;
+  };
+
+  private pendingRemoveUser?: {
+    id: number;
+    login: string;
+    first_name: string;
+    second_name: string;
+  };
 
   constructor(props?: PageChatProps) {
     super('div', { chats: [], ...props });
@@ -133,14 +162,56 @@ export default class PageChat extends Block<PageChatProps> {
         messages: activeChat.messages || [],
       });
 
-      this.settingsButton = new Button({
-        type: 'button',
-        view: 'default',
-        clear: true,
-        iconRight: SETTINGS_ICON,
-        events: {
-          click: () => {},
+      this.settingsButton = new Dropdown({
+        trigger: {
+          type: 'button',
+          view: 'default',
+          clear: true,
+          iconRight: SETTINGS_ICON,
         },
+        items: [
+          {
+            type: 'button',
+            view: 'default',
+            clear: true,
+            text: 'Добавить пользователя',
+            events: {
+              click: () => this.addUserModal?.show(),
+            },
+          },
+          {
+            type: 'button',
+            view: 'default',
+            clear: true,
+            text: 'Удалить пользователя',
+            events: {
+              click: () => this.removeUserModal?.show(),
+            },
+          },
+        ],
+      });
+      this.addUserModal = new Modal({
+        title: 'Добавить пользователя',
+        content: `
+          <div class="input-wrapper input-wrapper--top">
+            <label class="input-label" for="modal-input-login">Логин</label>
+            <input id="modal-input-login" class="input" type="text"/>
+          </div>
+        `,
+        buttonText: 'Добавить',
+        onAction: () => this.handleAddUser(),
+      });
+
+      this.removeUserModal = new Modal({
+        title: 'Удалить пользователя',
+        content: `
+          <div class="input-wrapper input-wrapper--top">
+            <label class="input-label" for="modal-input-login-del">Логин</label>
+            <input id="modal-input-login-del" class="input" type="text" />
+          </div>
+        `,
+        buttonText: 'Удалить',
+        onAction: () => this.handleRemoveUser(),
       });
 
       this.attachmentsButton = new Button({
@@ -217,6 +288,104 @@ export default class PageChat extends Block<PageChatProps> {
         }
       },
     });
+  }
+
+  private async handleAddUser() {
+    if (!this.pendingAddUser) {
+      const input = document.getElementById('modal-input-login') as HTMLInputElement | null;
+      const login = input?.value.trim() || '';
+
+      if (!login) {
+        this.addUserModal?.setProps({ errorText: 'Введите логин' });
+        this.addUserModal?.attachEvents();
+        return;
+      }
+
+      try {
+        const user = await ChatController.searchUserByLogin(login);
+        this.pendingAddUser = user;
+
+        this.addUserModal?.setProps({
+          title: 'Подтвердите',
+          content: `<p>Найден ${user.first_name} ${user.second_name}. Добавить?</p>`,
+          buttonText: 'Подтвердить',
+          errorText: '',
+        });
+        this.addUserModal?.attachEvents();
+      } catch (err: unknown) {
+        const errorMessage = isErrorWithMessage(err)
+          ? err.message
+          : 'Неизвестная ошибка';
+        this.addUserModal?.setProps({ errorText: errorMessage });
+        this.addUserModal?.attachEvents();
+      }
+
+      return;
+    }
+
+    try {
+      await ChatController.addUserToChat(
+        this.props.activeChatId!,
+        this.pendingAddUser.id,
+      );
+      this.addUserModal?.hide();
+      this.pendingAddUser = undefined;
+    } catch (err: unknown) {
+      const errorMessage = isErrorWithMessage(err)
+        ? err.message
+        : 'Неизвестная ошибка';
+      this.addUserModal?.setProps({ errorText: errorMessage });
+      this.addUserModal?.attachEvents();
+    }
+  }
+
+
+  private async handleRemoveUser() {
+    if (!this.pendingRemoveUser) {
+      const input = document.getElementById('modal-input-login-del') as HTMLInputElement | null;
+      const login = input?.value.trim() || '';
+
+      if (!login) {
+        this.removeUserModal?.setProps({ errorText: 'Введите логин' });
+        this.removeUserModal?.attachEvents();
+        return;
+      }
+
+      try {
+        const user = await ChatController.searchUserByLogin(login);
+        this.pendingRemoveUser = user;
+        this.removeUserModal?.setProps({
+          title: 'Подтвердите удаление',
+          content: `<p>Найден ${user.first_name} ${user.second_name}. Удалить?</p>`,
+          buttonText: 'Подтвердить',
+          errorText: '',
+        });
+        this.removeUserModal?.attachEvents();
+      } catch (err: unknown) {
+        const errorMessage = isErrorWithMessage(err)
+          ? err.message
+          : 'Неизвестная ошибка';
+        this.removeUserModal?.setProps({ errorText: errorMessage });
+        this.removeUserModal?.attachEvents();
+      }
+
+      return;
+    }
+
+    try {
+      await ChatController.removeUserFromChat(
+        this.props.activeChatId!,
+        this.pendingRemoveUser.id,
+      );
+      this.removeUserModal?.hide();
+      this.pendingRemoveUser = undefined;
+    } catch (err: unknown) {
+      const errorMessage = isErrorWithMessage(err)
+        ? err.message
+        : 'Неизвестная ошибка';
+      this.removeUserModal?.setProps({ errorText: errorMessage });
+      this.removeUserModal?.attachEvents();
+    }
   }
 
   private updateChatsFromStore() {
