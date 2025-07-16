@@ -1,6 +1,7 @@
 import { HTTPTransport } from '../core/HTTPTransport';
+import { API_BASE_URL } from './config';
 
-const authAPI = new HTTPTransport('https://ya-praktikum.tech/api/v2');
+const authAPI = new HTTPTransport(API_BASE_URL);
 
 export class AuthAPI {
   static signup(data: Record<string, unknown>) {

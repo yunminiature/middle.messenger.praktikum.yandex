@@ -92,4 +92,12 @@ export class ChatController {
     }
     await this.checkAuthAndLoadChats();
   }
+
+  static async createChat(title: string) {
+    const xhr = await ChatAPI.createChat(title);
+    if (xhr.status !== 200) {
+      throw new Error('Не удалось создать чат');
+    }
+    await this.checkAuthAndLoadChats();
+  }
 }

@@ -1,6 +1,7 @@
 import { HTTPTransport } from '../core/HTTPTransport';
+import { API_BASE_URL } from './config';
 
-const userAPI = new HTTPTransport('https://ya-praktikum.tech/api/v2', 'include');
+const userAPI = new HTTPTransport(API_BASE_URL, 'include');
 
 export class UserAPI {
   static updateProfile(data: Record<string, unknown>) {

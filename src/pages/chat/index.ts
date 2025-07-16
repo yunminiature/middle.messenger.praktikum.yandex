@@ -89,6 +89,10 @@ export default class PageChat extends Block<PageChatProps> {
     second_name: string;
   };
 
+  private newChatButton?: Button;
+
+  private newChatModal?: Modal;
+
   constructor(props?: PageChatProps) {
     super('div', { chats: [], ...props });
   }
@@ -151,6 +155,29 @@ export default class PageChat extends Block<PageChatProps> {
       },
     });
 
+    this.newChatButton = new Button({
+      type: 'button',
+      view: 'default',
+      clear: true,
+      text: 'Новый чат',
+      fullWidth: true,
+      events: {
+        click: () => this.newChatModal?.show(),
+      },
+    });
+
+    this.newChatModal = new Modal({
+      title: 'Создать новый чат',
+      content: `
+      <div class="input-wrapper input-wrapper--top">
+        <label class="input-label" for="modal-input-chat-title">Название чата</label>
+        <input id="modal-input-chat-title" class="input" type="text" />
+      </div>
+    `,
+      buttonText: 'Создать',
+      onAction: () => this.handleCreateChat(),
+    });
+
     if (activeChat) {
       this.avatar = new Avatar({
         src: activeChat.avatar,
@@ -190,6 +217,7 @@ export default class PageChat extends Block<PageChatProps> {
           },
         ],
       });
+
       this.addUserModal = new Modal({
         title: 'Добавить пользователя',
         content: `
@@ -290,14 +318,40 @@ export default class PageChat extends Block<PageChatProps> {
     });
   }
 
+  private async handleCreateChat() {
+    const modal = this.newChatModal;
+    if (!modal) return;
+
+    const input = document.getElementById('modal-input-chat-title') as HTMLInputElement | null;
+    const title = input?.value.trim() || '';
+
+    if (!title) {
+      modal?.setProps({ errorText: 'Введите название чата' });
+      modal?.attachEvents();
+      return;
+    }
+
+    try {
+      await ChatController.createChat(title);
+      modal.hide();
+    } catch (err: unknown) {
+      const msg = isErrorWithMessage(err) ? err.message : 'Не удалось создать';
+      modal?.setProps({ errorText: msg });
+      modal?.attachEvents();
+    }
+  }
+
   private async handleAddUser() {
+    const modal = this.addUserModal;
+    if (!modal) return;
+
     if (!this.pendingAddUser) {
       const input = document.getElementById('modal-input-login') as HTMLInputElement | null;
       const login = input?.value.trim() || '';
 
       if (!login) {
-        this.addUserModal?.setProps({ errorText: 'Введите логин' });
-        this.addUserModal?.attachEvents();
+        modal.setProps({ errorText: 'Введите логин' });
+        modal.attachEvents();
         return;
       }
 
@@ -305,19 +359,19 @@ export default class PageChat extends Block<PageChatProps> {
         const user = await ChatController.searchUserByLogin(login);
         this.pendingAddUser = user;
 
-        this.addUserModal?.setProps({
+        modal.setProps({
           title: 'Подтвердите',
           content: `<p>Найден ${user.first_name} ${user.second_name}. Добавить?</p>`,
           buttonText: 'Подтвердить',
           errorText: '',
         });
-        this.addUserModal?.attachEvents();
+        modal.attachEvents();
       } catch (err: unknown) {
         const errorMessage = isErrorWithMessage(err)
           ? err.message
           : 'Неизвестная ошибка';
-        this.addUserModal?.setProps({ errorText: errorMessage });
-        this.addUserModal?.attachEvents();
+        modal.setProps({ errorText: errorMessage });
+        modal.attachEvents();
       }
 
       return;
@@ -328,45 +382,47 @@ export default class PageChat extends Block<PageChatProps> {
         this.props.activeChatId!,
         this.pendingAddUser.id,
       );
-      this.addUserModal?.hide();
+      modal.hide();
       this.pendingAddUser = undefined;
     } catch (err: unknown) {
       const errorMessage = isErrorWithMessage(err)
         ? err.message
         : 'Неизвестная ошибка';
-      this.addUserModal?.setProps({ errorText: errorMessage });
-      this.addUserModal?.attachEvents();
+      modal.setProps({ errorText: errorMessage });
+      modal.attachEvents();
     }
   }
 
-
   private async handleRemoveUser() {
+    const modal = this.removeUserModal;
+    if (!modal) return;
+
     if (!this.pendingRemoveUser) {
       const input = document.getElementById('modal-input-login-del') as HTMLInputElement | null;
       const login = input?.value.trim() || '';
 
       if (!login) {
-        this.removeUserModal?.setProps({ errorText: 'Введите логин' });
-        this.removeUserModal?.attachEvents();
+        modal.setProps({ errorText: 'Введите логин' });
+        modal.attachEvents();
         return;
       }
 
       try {
         const user = await ChatController.searchUserByLogin(login);
         this.pendingRemoveUser = user;
-        this.removeUserModal?.setProps({
+        modal.setProps({
           title: 'Подтвердите удаление',
           content: `<p>Найден ${user.first_name} ${user.second_name}. Удалить?</p>`,
           buttonText: 'Подтвердить',
           errorText: '',
         });
-        this.removeUserModal?.attachEvents();
+        modal.attachEvents();
       } catch (err: unknown) {
         const errorMessage = isErrorWithMessage(err)
           ? err.message
           : 'Неизвестная ошибка';
-        this.removeUserModal?.setProps({ errorText: errorMessage });
-        this.removeUserModal?.attachEvents();
+        modal.setProps({ errorText: errorMessage });
+        modal.attachEvents();
       }
 
       return;
@@ -377,14 +433,14 @@ export default class PageChat extends Block<PageChatProps> {
         this.props.activeChatId!,
         this.pendingRemoveUser.id,
       );
-      this.removeUserModal?.hide();
+      modal.hide();
       this.pendingRemoveUser = undefined;
     } catch (err: unknown) {
       const errorMessage = isErrorWithMessage(err)
         ? err.message
         : 'Неизвестная ошибка';
-      this.removeUserModal?.setProps({ errorText: errorMessage });
-      this.removeUserModal?.attachEvents();
+      modal.setProps({ errorText: errorMessage });
+      modal.attachEvents();
     }
   }
 
@@ -419,6 +475,14 @@ export default class PageChat extends Block<PageChatProps> {
       chatListStub.innerHTML = '';
       if (this.chatList) {
         chatListStub.appendChild(this.chatList.getContent());
+      }
+    }
+
+    const newChatStub = content.querySelector('[data-id="new-chat-button"]');
+    if (newChatStub) {
+      newChatStub.innerHTML = '';
+      if (this.newChatButton) {
+        newChatStub.appendChild(this.newChatButton.getContent());
       }
     }
 

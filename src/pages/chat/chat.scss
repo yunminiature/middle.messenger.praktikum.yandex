@@ -14,6 +14,7 @@
         flex-shrink: 0;
         height: 100vh;
         overflow-y: auto;
+        position: relative;
         width: 310px;
 
         &::-webkit-scrollbar {
@@ -29,12 +30,13 @@
             background-color: transparent;
         }
 
-        > [data-id] {
-            height: 100%;
+        > [data-id="new-chat-button"] {
+            height: auto !important;
+            margin-top: auto;
+        }
 
-            > [data-id] {
-                height: 100%;
-            }
+        > [data-id="new-chat-button"] > [data-id] {
+            height: auto !important;
         }
     }
 
@@ -103,13 +105,21 @@
         padding: 10px 0 20px;
         width: 100%;
 
-        > [data-id] {
+        > [data-id="chatlist"] {
             height: 100%;
 
             > [data-id] {
                 height: 100%;
             }
         }
+    }
+
+    .chat-page__new-chat {
+        background: #FBFBFB;
+        bottom: 0;
+        padding: 16px;
+        position: sticky;
+        z-index: 1;
     }
 
     &__chat-footer {
