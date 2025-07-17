@@ -10,12 +10,13 @@
             />
         </div>
         <div data-id="chatlist"></div>
+        <div class="chat-page__new-chat" data-id="new-chat-button"></div>
     </div>
     {{#if activeChat}}
         <div class="chat-page__chat">
             <div class="chat-page__chat-header">
                 <div data-id="avatar"></div>
-                <p class="chat-page__name">{{activeChat.name}}</p>
+                <p class="chat-page__name">{{activeChat.title}}</p>
 
                 <div class="chat-page__setting">
                     <div data-id="settings-button"></div>

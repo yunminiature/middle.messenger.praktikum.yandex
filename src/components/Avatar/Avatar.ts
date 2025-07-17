@@ -15,7 +15,11 @@ export interface AvatarProps {
 
 export default class Avatar extends Block {
   constructor(props: AvatarProps) {
-    super('div', props);
+    const fullSrc = props.src
+      ? (props.src.startsWith('http') ? props.src : `https://ya-praktikum.tech/api/v2/resources${props.src}`)
+      : '';
+
+    super('div', { ...props, src: fullSrc });
   }
 
   protected compile(): string {

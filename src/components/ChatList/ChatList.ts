@@ -7,8 +7,8 @@ import './ChatList.scss';
 
 export interface ChatListProps {
   chats: ChatItemProps[];
-  activeChatId?: string;
-  onChatSelect?: (chatId: string) => void;
+  activeChatId?: number;
+  onChatSelect?: (chatId: number) => void;
   listId?: string;
 }
 
@@ -39,7 +39,6 @@ export default class ChatList extends Block<ChatListProps> {
   private renderChats(chats: ChatItemProps[]): void {
     const ul = this.getContent().querySelector<HTMLUListElement>('ul.chat-list');
     if (!ul) {
-      console.warn('[ChatList] renderChats: не найден <ul class="chat-list">');
       return;
     }
 
@@ -62,6 +61,9 @@ export default class ChatList extends Block<ChatListProps> {
 
       const chatItemInstance = new ChatItem(copyProps);
       ul.appendChild(chatItemInstance.getContent());
+      if (typeof (chatItemInstance as ChatItem & { callComponentDidMount?: () => void }).callComponentDidMount === 'function') {
+        (chatItemInstance as ChatItem & { callComponentDidMount?: () => void }).callComponentDidMount!();
+      }
     });
   }
 }

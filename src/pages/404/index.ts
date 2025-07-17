@@ -5,6 +5,7 @@ import { Error } from '../../components/Error';
 import type { ErrorProps } from '../../components/Error';
 import rawTemplate from './404.hbs?raw';
 import './404.scss';
+import { router } from '../../main.ts';
 
 const compiledTemplate = Handlebars.compile(rawTemplate);
 
@@ -28,7 +29,7 @@ export default class Page404 extends Block {
       title: '404',
       description: 'Не туда попали',
       onBackClick: () => {
-        history.pushState({}, '', '/chat');
+        router.go('/chat');
         window.dispatchEvent(new PopStateEvent('popstate'));
       },
     };

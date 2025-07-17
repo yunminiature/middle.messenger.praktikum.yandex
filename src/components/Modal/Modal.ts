@@ -26,7 +26,7 @@ export default class Modal extends Block<ModalProps> {
     return true;
   }
 
-  private attachEvents() {
+  public attachEvents() {
     const root = this.getContent();
     root.onclick = (e) => {
       const overlay = root.querySelector('[data-id="modal-overlay"]');
@@ -67,7 +67,6 @@ export default class Modal extends Block<ModalProps> {
       });
       btn.getContent().setAttribute('data-id', 'modal-action');
       buttonHtml = btn.getContent().outerHTML;
-      console.log('[Modal] buttonHtml:', buttonHtml);
     }
     const context = {
       title: this.props.title,
@@ -77,7 +76,6 @@ export default class Modal extends Block<ModalProps> {
       buttonHtml,
     };
     const result = Handlebars.compile(rawTemplate)(context);
-    console.log('[Modal] compiled HTML:', result);
     return result;
   }
 }

@@ -108,6 +108,10 @@ export default class Block<P extends Props = Props> {
     void this;
   }
 
+  public dispatchComponentDidMount(): void {
+    this.componentDidMount();
+  }
+
   private _render() {
     const fragment = this.render();
     if (this._element) {

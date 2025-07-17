@@ -116,6 +116,10 @@ export default class FileUploadModal {
     });
     this.modal.getContent().appendChild(this.fileInput);
     this.attachChooseLinkHandler();
+
+    if (typeof (this.modal as Modal & { attachEvents?: () => void }).attachEvents === 'function') {
+      (this.modal as Modal & { attachEvents?: () => void }).attachEvents!();
+    }
   }
 
   public show(): void {
