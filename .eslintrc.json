@@ -21,6 +21,7 @@
   "rules": {
     "no-console": "off",
     "@typescript-eslint/naming-convention": "off",
+    "@typescript-eslint/class-methods-use-this": "off",
     "import/extensions": "off",
 
     "import/no-extraneous-dependencies": [
@@ -48,5 +49,17 @@
         "extensions": [".js", ".jsx", ".ts", ".tsx", ".hbs"]
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.spec.ts", "**/*.test.ts", "mochaSetup.ts"],
+      "env": {
+        "mocha": true
+      },
+      "rules": {
+        "import/no-extraneous-dependencies": "off",
+        "@typescript-eslint/no-unused-expressions": "off"
+      }
+    }
+  ]
 }

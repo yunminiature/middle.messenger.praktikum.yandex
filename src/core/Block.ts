@@ -1,4 +1,4 @@
-import { EventBus } from './EventBus';
+import { EventBus } from './EventBus.js';
 
 export type Props = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
