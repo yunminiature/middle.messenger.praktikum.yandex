@@ -52,7 +52,7 @@
   },
   "overrides": [
     {
-      "files": ["**/*.spec.ts", "**/*.test.ts"],
+      "files": ["**/*.spec.ts", "**/*.test.ts", "mochaSetup.ts"],
       "env": {
         "mocha": true
       },
