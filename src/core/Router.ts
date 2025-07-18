@@ -1,6 +1,6 @@
-import Route from './Route';
-import Block from './Block';
-import type { Props } from './Block';
+import Route from './Route.js';
+import Block from './Block.js';
+import type { Props } from './Block.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type BlockClass<P extends Props = Props> = new (props?: P) => Block<P>;
