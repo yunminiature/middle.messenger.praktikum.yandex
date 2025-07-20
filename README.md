@@ -1,5 +1,5 @@
-# Вёрстка проекта
-Этот репозиторий содержит вёрстку пользовательского интерфейса проекта.
+# Учебный проект
+Этот репозиторий содержит учебный проект - мессенджер
 За основу взят [макет](https://www.figma.com/design/jF5fFFzgGOxQeB4CmKWTiE/Chat_external_link?node-id=0-1&p=f&t=v5pJtGfWB1ydkjAl-0)
 
 Актуальная сборка ветки `deploy` на [Netlfy](https://idyllic-elf-73eb2f.netlify.app/)
